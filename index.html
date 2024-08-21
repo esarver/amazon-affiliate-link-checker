@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Affiliate Link Detector</title>
+    <script>
+        const AFFILIATE = "Affiliate link likely";
+        const NOT_AFFILIATE = "Likely NOT an affiliate link";
+        const INCONCLUSIVE = "¯\\_(ツ)_/¯ Unclear whether it is an affiliate link.";
+
+        function analyze_params(params){
+            const linkCode = params.get("linkCode")
+            const tag = params.get("tag")
+
+            if(linkCode !== null && tag !== null) {
+                return [AFFILIATE, `Found linkCode: ${linkCode}\nFound tag: ${tag}`]
+            }
+
+            if(linkCode !== null) {
+                return [INCONCLUSIVE, `Found linkCode: ${linkCode}\nDid not find tag`]
+            }
+
+            if(tag !== null) {
+                return [INCONCLUSIVE, `Found tag: ${tag}\nDid not find linkCode`]
+            }
+
+            return [NOT_AFFILIATE, `Did not find tag or linkCode in URL`]
+        }
+
+        function check_url() {
+            let url_box = document.getElementById("url")
+            if (!url_box){
+                return
+            }
+            const url = new URL(url_box.value)
+            const params = url.searchParams
+
+            let [result, reasoning] = analyze_params(params)
+
+            post_results(result, reasoning)
+        }
+
+        function post_results(result, reasoning) {
+            let result_div = document.getElementById("resultsDiv")
+            let disposition_element = document.getElementById("disposition")
+            let reasoning_element = document.getElementById("reasoning")
+
+            switch (result) {
+                case AFFILIATE:
+                    result_div.classList = "results affiliate"
+                    break;
+                case NOT_AFFILIATE:
+                    result_div.classList = "results nonaffiliate"
+                    break;
+                case INCONCLUSIVE:
+                    result_div.classList = "results inconclusive"
+                    break;
+                default:
+                    break;
+            }
+            disposition_element.innerText = result
+            reasoning_element.innerText = reasoning
+
+            result_div.hidden = false
+        }
+    </script>
+    <style>
+        body {
+            background-color: #2F2F2F;
+            color: #DFDFDF;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        p.description {
+            font-size: 16px;
+            color: #AFAFAF;
+        }
+
+        h2.step {
+            font-size: 40px;
+        }
+
+        p.explanation {
+            font-size: 14px;
+            color: #AFAFAF;
+        }
+
+        input {
+            width: 50%;
+            height: 30px;
+            border-radius: 5px;
+            background-color: #AFAFAF;
+            color: #303030;
+        }
+
+        div.results.affiliate {
+            background-color: #CF5F5F;
+            color: #0F0F0F;
+        }
+
+        div.results.nonaffiliate {
+            background-color: #5FCF5F;
+            color: #3F3F3F;
+        }
+
+        div.results.inconclusive {
+            background-color: #CFCF2F;
+            color: #3F3F3F;
+        }
+        #resultsDiv p.disposition {
+            font-weight: bolder;
+            font-size: 30px;
+        }
+
+        #resultsDiv p.reasoning {
+            font-size: 14px;
+            text-align: left;
+            width: 30%;
+            align-self: center;
+            margin: 0 auto;
+        }
+
+
+    </style>
+</head>
+<body>
+    <h1 class="title">Amazon Affiliate Link Detector</h1>
+    <p class="description">
+        This tool will analyze the provided URL and check to see whether it is an Amazon affiliate link.
+        Please note that this is not guaranteed and is based on a best guess based on the URL parameters.
+    </p>
+
+    <h2 class="step">Step 1: Click the Link</h2>
+    <p class="explanation">
+        Many Amazon links are shortened, so you need to click the link in order to allow
+        any redirects to occur.
+    </p>
+
+    <h2 class="step">Step 2: Copy the URL</h2>
+    <p class="explanation">
+        Copy the final URL from the address bar of you browser.
+    </p>
+
+    <h2 class="step">Step 3: Paste the URL</h2>
+    <p class="explanation">
+        In the textbox below, paste the URL copied from Step 2.
+    </p>
+    <input type="text" name="url" id="url" oninput="check_url()" placeholder="Paste URL Here">
+    <div class="results inconclusive" id="resultsDiv" hidden>
+        <h2 class="results">Results</h2>
+        <p class="disposition" id="disposition"></p>
+        <p class="reasoning" id="reasoning"></p>
+    </div>
+</body>
+</html>
